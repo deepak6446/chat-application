@@ -1,0 +1,23 @@
+{
+  "name": "chatting",
+  "version": "1.0.0",
+  "description": "chat and make friends",
+  "main": "server.js",
+  "scripts": {
+    "test": "deep",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "deep6446"
+  },
+  "keywords": [
+    "deep"
+  ],
+  "author": "deepak poojari",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.2",
+    "socket.io": "^1.7.3"
+  }
+}
