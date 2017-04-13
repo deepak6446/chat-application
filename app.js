@@ -7,17 +7,48 @@ function maincontroller($scope,chatSocket){
 		var sendto;
         $scope.box=false;
         $scope.space=true;
-		$scope.line="Your chatting with random stranger Say Hi !!!!";
+		$scope.line="Finding users nearby";
 		scroll();
-		//join request for creating a chat room
-		//chatSocket.emit('join', {email:"deepak"});
 	    if(mobilecheck()){
 	    	$scope.sidebar=false;
 	    	$scope.h=29;
 	    }else{
 	    	$scope.sidebar=true;
             $scope.h=34;	    
-	    }	
+	    }
+	    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition,showError);
+    } else {
+     alert("unable to detect your location");
+    }
+    function showError(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            alert("Please Allow Location to help you find Friends nearby or check wether your GPS is on");
+            break;
+        case error.POSITION_UNAVAILABLE:
+            alert("Check Your Internet Connection& TRY AGAIN");
+            break;
+        case error.TIMEOUT:
+            alert("The request to get user location timed out. TRY AGAIN");
+            break;
+        case error.UNKNOWN_ERROR:
+            alert("An unknown error occurred. TRY AGAIN");
+            break;
+    }
+}
+    function showPosition(position) {
+	    	console.log("position :",position);
+		    console.log("lat :",position.coords.latitude); 
+		    console.log("lng : ",position.coords.longitude);
+		    chatSocket.emit('lat lng',{lat:position.coords.latitude,lng:position.coords.longitude});
+
+		    setInterval(function(){
+		    	if($scope.line!="Found active User nearby Say Hi !!!!!"){
+		    		console.log("join request send");
+		    	}
+		    },5000);
+		}	
 
 	}
 	function mobilecheck() {
@@ -41,6 +72,11 @@ function maincontroller($scope,chatSocket){
 		$scope.msg="";
 		$scope.box=false;
 	}
+	chatSocket.on("user disconnected",function(data){
+		console.log("disconnected from user : ",data);
+		$("#chatwindow").html("");
+		$scope.line="User Disconnected Trying to connect to Other Users";
+	});
 	chatSocket.on('messagefromserver',function(data){
 		console.log("message received :",data);
 		var element1 = angular.element("<div class='row'><div class='textbox' style='float:left;margin-top:1em'><strong>Stranger : "+data+"</strong></div></div>");
@@ -50,6 +86,7 @@ function maincontroller($scope,chatSocket){
         $scope.space=false;
 	});
 	chatSocket.on('joined to',function(data){
+		$scope.line="Found active User nearby Say Hi !!!!!";
 		sendto=data;
 		console.log("joined to :",sendto);		
 	});

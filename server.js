@@ -9,60 +9,129 @@ app.get('/', function(req, res){
 });
 
 var room = [],i=0;
-io.on('connection', function(socket){
-  var socketId = socket.id;
-  var clientIp = socket.request.connection.remoteAddress;
-  var username = socketId+clientIp;  //username is used to uniquely identify user
-  console.log("user connected username : ",username);  
-  //create room for user to store user data
-  room.push({user:username,connected:"0",connectedto:"",room:""});
-  //join user to room with name as username 
-  socket.join(username);
-  console.log(room.length,"user : ",room[room.length-1].user," room :",room[room.length-1].room);
-  console.log("");
+function setlat(socketId,lat,lng){
+	for(i=0;i<room.length;i++){
+		if(room[i].socket==socketId){
+			room[i].lat=lat;
+			room[i].lng=lng;
+		}
+	}
+	console.log("room length : ",room.length);
+	console.log(room.length,"user : ",room[room.length-1].user," room :",room[room.length-1].room,"lat",room[room.length-1].lat,"lng",room[room.length-1].lng);
+}
 
-  //find room for 2 users and connect them 
-  for(i=0;i<room.length-1;i++)
-  {
-     if(room[i].connected==0 && room[i].user != username)
-     {
-     	console.log("room found");
-        room[i].connected=1;
-        room[i].connectedto=room[room.length-1].user;
-        io.in(room[i].user).emit('joined to',room[room.length-1].user)  
+function disconnect(user,socket){
+	console.log("in disconnect user :",user);
+  	socket.leave(user);
+  	console.log("user socket.leave : ",user);
+    var index=findUser(user,socket);
+    var username=findConnectedUser(user,socket);	
+    var indx=findUser(username,socket);
+    console.log("index : ",index)
+    room.splice(index,1);
+    console.log("after splice");
+    displayUser();
+    findUserRoom(username,indx-1);
+    console.log("after findUserRoom");
+    displayUser();
+}
 
-        room[room.length-1].connected=1;
-        room[room.length-1].connectedto=room[i].user;
-        io.in(room[room.length-1].user).emit('joined to',room[i].user)        
-     	//process.exit(0);
-     }
-  }
-  //console.log(room);
-  /*for(j=0;j<room.le)*/
-  //setInterval(function(){console.log("room length",room.length)},5000);
-  //console.log("user1 in room :",room[i].user1);
-  socket.on('chat message', function(data){
-    console.log('message : ',data.msg,"to : ",data.to);
-    //io.emit('messagefromserver',msg);
-    io.in(data.to).emit('messagefromserver',data.msg)
-  });
-  
-  /*socket.on('join',function(data){
-  	console.log("user connected to room :",data.email);
-  	socket.join(data.email);
-  })*/
-  
-  socket.on('disconnect',function(){
-  	console.log("user disconnected username : ",username);
-  	socket.leave(username);
-    for(i=0;i<room.length-1;i++)
-    {
-    	if(room[i].user==username){
-    		index=i;
+function findUser(user,socket){
+    for(var i=0;i<room.length-1;i++){
+    	if(user==room[i].user){
+    		var index=i;
+    		console.log("user found in findUser():",room[i].user);
+    		return index;
     		break;
     	}
-    }
-    console.log("user disconnected : ",room.pop(room[index]));
+    }	
+}
+
+function findConnectedUser(user,socket){
+	for(var i=0;i<room.length-1;i++){
+		console.log("in findConnectedUser() user : ",user,"room[i].user",room[i].user);
+    	if(user==room[i].connectedto){
+    		room[i].connectedto = "";
+    		room[i].connected=0;
+    		console.log("***user connection cleaned in findConnectedUser() for :",room[i].user);
+    		io.in(room[i].user).emit('user disconnected',user);
+    		displayUser();
+    		return(room[i].user);
+    		break;
+    	}
+    }		
+}
+function findUserRoom(username,index){
+	//find room for 2 users and connect them 
+	console.log("finding room for :",username,"index:",index);
+	if(typeof index == 'undefined' || index < 0 || isNaN(index)){
+	}else{
+	  for(i=0;i<=room.length-1;i++)
+	  {
+	     if(room[i].connected==0 && room[i].user != username)
+	     {
+	     	console.log("room found",room[i].user);
+	        room[i].connected=1;
+	        room[i].connectedto=room[index].user;
+	        io.in(room[i].user).emit('joined to',room[index].user)  
+
+	        room[index].connected=1;
+	        room[index].connectedto=room[i].user;
+	        io.in(room[index].user).emit('joined to',room[i].user)   
+	        break;     
+	     }
+	  }
+	 } 
+}
+function displayUser(){
+	console.log("----------Active Users-----------------------------");
+	for(i=0;i<room.length;i++){
+	  console.log("user : ",room[i].user,"connected : ",room[i].connected,"connectedto: ",room[i].connectedto);
+	}
+	/*console.log(room);*/
+	console.log("----------Active Users-----------------------------");
+
+}
+io.on('connection', function(socket){
+  
+  var socketId = socket.id;
+  var clientIp = socket.request.connection.remoteAddress;
+  var username;  
+  console.log("--------------------new connection request --------------------");
+  socket.on('lat lng' , function(data){
+  	console.log('lat: ',data.lat,'long:',data.lng,'room.length : ',room.length);
+  	  username = socketId+clientIp;  //username is used to uniquely identify user
+	  //join user to room with name as username 
+	  socket.join(username);
+	  //create room for user to store user data
+	  console.log("user connected username : ",username);
+	  room.push({user:username,connected:"0",connectedto:"",room:"",lat:"",lng:"",socket:socket});
+	  
+	  /*console.log(room.length,"user : ",room[room.length-1].user," room :",room[room.length-1].room,"lat",room[room.length-1].lat,"lng",room[room.length-1].lng);*/
+	  console.log("");
+	  displayUser(); 	 
+	  findUserRoom(username,room.length-1);
+	  
+	  	setlat(socket,data.lat,data.lng);
+	  	console.log('---- after setting lat long and connection if possible ------');
+	  	displayUser();
+	  	//process.exit(0);
+  });
+  //on message received
+  socket.on('chat message', function(data){
+    console.log('message : ',data.msg,"to : ",data.to);
+    //data.to has user name of user to whom data is to be send
+    io.in(data.to).emit('messagefromserver',data.msg);
+  });
+  //disconnect socket 
+  socket.on('disconnect',function(){
+  	if(typeof username == 'undefined'){
+  		console.log("usernot set");
+  	}else{
+  	console.log("In disconnected username : ",username);
+  	disconnect(username,socket);
+  	console.log("--------------------------------------------------------------");
+    }  
   });
 });
 
