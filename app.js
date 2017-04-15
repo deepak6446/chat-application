@@ -5,49 +5,55 @@ app.controller("maincontroller",maincontroller);
 function maincontroller($scope,chatSocket){
 	$scope.appinit=function(){
 		var sendto;
+	    $scope.showModal=true;
+	    $scope.goanonymous=function(){
+	      console.log("in lat");
+	      chatSocket.emit('connection');
+	    }
         $scope.box=false;
         $scope.space=true;
 		$scope.line="Finding users nearby";
+		var wi = window.innerWidth;
+		var hi = window.innerHeight;
+
 		scroll();
 	    if(mobilecheck()){
 	    	$scope.sidebar=false;
-	    	$scope.h=29;
+	    	$scope.h=0.22*hi;
 	    }else{
 	    	$scope.sidebar=true;
-            $scope.h=34;	    
+            $scope.h=0.058*hi;
 	    }
 	    if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition,showError);
-    } else {
-     alert("unable to detect your location");
-    }
+	    } else {
+	     alert("unable to detect your location");
+	    }
     function showError(error) {
-    switch(error.code) {
-        case error.PERMISSION_DENIED:
-            alert("Please Allow Location to help you find Friends nearby or check wether your GPS is on");
-            break;
-        case error.POSITION_UNAVAILABLE:
-            alert("Check Your Internet Connection& TRY AGAIN");
-            break;
-        case error.TIMEOUT:
-            alert("The request to get user location timed out. TRY AGAIN");
-            break;
-        case error.UNKNOWN_ERROR:
-            alert("An unknown error occurred. TRY AGAIN");
-            break;
+    console.log("IN showError");
+	    switch(error.code) {
+	        case error.PERMISSION_DENIED:
+	            alert("Please Allow Location to help you find Friends nearby or check wether your GPS is on");
+	            break;
+	        case error.POSITION_UNAVAILABLE:
+	            alert("Check Your Internet Connection& TRY AGAIN");
+	            break;
+	        case error.TIMEOUT:
+	            alert("The request to get user location timed out. TRY AGAIN");
+	            break;
+	        case error.UNKNOWN_ERROR:
+	            alert("An unknown error occurred. TRY AGAIN");
+	            break;
+	    }
     }
-}
     function showPosition(position) {
+    	$scope.loc=true;
 	    	console.log("position :",position);
 		    console.log("lat :",position.coords.latitude); 
 		    console.log("lng : ",position.coords.longitude);
 		    chatSocket.emit('lat lng',{lat:position.coords.latitude,lng:position.coords.longitude});
+		    
 
-		    setInterval(function(){
-		    	if($scope.line!="Found active User nearby Say Hi !!!!!"){
-		    		console.log("join request send");
-		    	}
-		    },5000);
 		}	
 
 	}

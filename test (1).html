@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GEOIP DB - jQuery example</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="application/javascript">
+    $.getJSON("http://api.ipify.org/?format=jsonp&callback=?", function(data) {
+    	  console.log(data.ip);
+    	  document.getElementById("d").innerHTML =data.ip
+    	  $.getJSON('http://ipinfo.io/'+data.ip+'/loc', function(data2){
+        	  console.log(data2);
+        	  document.getElementById("e").innerHTML =data2
+        	});
+    	});
+    
+    </script>
+</head>
+<body>
+ <p id="d"><p>
+ <p id="e"><p>
+</body>
+</html>
