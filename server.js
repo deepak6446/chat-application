@@ -118,7 +118,7 @@ function findUserRoom(username,index){
 	        room[index].connected=1;
 	        room[index].connectedto=room[i].user;
 	        io.in(room[index].user).emit('joined to',room[i].user)   
-	        break;     
+	        break; 
 	     }
 	  }
 	 } 
@@ -133,6 +133,7 @@ function findLatUserRoom(username,index){
 	  {
 	     if(latroom[i].connected==0 && latroom[i].user != username)
 	     {
+	     	try{
 	     	console.log("room found",latroom[i].user);
 	        latroom[i].connected=1;
 	        latroom[i].connectedto=latroom[index].user;
@@ -141,7 +142,10 @@ function findLatUserRoom(username,index){
 	        latroom[index].connected=1;
 	        latroom[index].connectedto=latroom[i].user;
 	        io.in(latroom[index].user).emit('joined to',latroom[i].user)   
-	        break;     
+	        break;
+	        }catch(ex){
+	        	console.log("exception caught in try catch : ",ex);
+	        }         
 	     }
 	  }
 	 } 
@@ -217,6 +221,11 @@ io.on('connection', function(socket){
 	  //setlat(socket,data.lat,data.lng);
 	  console.log('---- after setting lat long and connection if possible ------');
 	  displayLatUser();	  	
+  });
+  socket.on('reconnect', function(data){
+    console.log('message : ',data.msg,"to : ",data.to);
+    //data.to has user name of user to whom data is to be send
+    io.in(data.to).emit('messagefromserver',data.msg);
   });
   //on message received
   socket.on('chat message', function(data){

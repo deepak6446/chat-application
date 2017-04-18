@@ -5,17 +5,20 @@ app.controller("maincontroller",maincontroller);
 function maincontroller($scope,chatSocket){
 	$scope.appinit=function(){
 		var sendto;
-	    $scope.showModal=true;
 	    $scope.goanonymous=function(){
 	      console.log("in lat");
 	      chatSocket.emit('connection');
+	    }
+	    $scope.reconnect=function(){
+	    	console.log("in reconnect()");
+	    	chatSocket.emit('reconnect');
 	    }
         $scope.box=false;
         $scope.space=true;
 		$scope.line="Finding users nearby";
 		var wi = window.innerWidth;
 		var hi = window.innerHeight;
-
+                  
 		scroll();
 	    if(mobilecheck()){
 	    	$scope.sidebar=false;
@@ -30,6 +33,8 @@ function maincontroller($scope,chatSocket){
 	     alert("unable to detect your location");
 	    }
     function showError(error) {
+	    $scope.showModal=true;
+
     console.log("IN showError");
 	    switch(error.code) {
 	        case error.PERMISSION_DENIED:
@@ -72,7 +77,7 @@ function maincontroller($scope,chatSocket){
 	$scope.sendmsg=function(){
 		console.log($scope.msg);
 		chatSocket.emit('chat message',{msg:$scope.msg,to:sendto});
-		var element1 = angular.element("<div class='row'><div class='textbox' style='float:right;margin-top:1em'><strong>You : "+$scope.msg+"</strong></div></div>");
+		var element1 = angular.element("<div class='row'><div class='textbox' style='float:right;margin-top:1em'><strong style='color:white'>You : "+$scope.msg+"</strong></div></div>");
         $("#chatwindow").append(element1);
         scroll();
 		$scope.msg="";
@@ -85,7 +90,7 @@ function maincontroller($scope,chatSocket){
 	});
 	chatSocket.on('messagefromserver',function(data){
 		console.log("message received :",data);
-		var element1 = angular.element("<div class='row'><div class='textbox' style='float:left;margin-top:1em'><strong>Stranger : "+data+"</strong></div></div>");
+		var element1 = angular.element("<div class='row'><div class='textbox' style='float:left;margin-top:1em'><strong style='color:white'>Stranger : "+data+"</strong></div></div>");
         $("#chatwindow").append(element1);
         scroll();
         $scope.line="";
