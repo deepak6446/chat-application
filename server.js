@@ -107,7 +107,7 @@ function findUserRoom(username,index){
 	if(typeof index == 'undefined' || index < 0 || isNaN(index)){
 	}else{
 	  for(i=0;i<=room.length-1;i++)
-	  {
+	  {   try{
 	     if(room[i].connected==0 && room[i].user != username)
 	     {
 	     	console.log("room found",room[i].user);
@@ -120,13 +120,14 @@ function findUserRoom(username,index){
 	        io.in(room[index].user).emit('joined to',room[i].user)   
 	        break; 
 	     }
+	        }catch(ex){console.log("exception : ",ex)}
 	  }
 	 } 
 }
 function findLatUserRoom(username,index){
 	//find room for 2 users and connect them 
 	console.log("finding room in lat user for :",username,"index:",index);
-	if(typeof index == 'undefined' || index < 0 || isNaN(index)){
+	if(typeof index == 'undefined' || index < 0 || isNaN(index)||typeof latroom[index].user=='undefined'){
 	}
 	else{
 	  for(i=0;i<=latroom.length-1;i++)
@@ -222,10 +223,31 @@ io.on('connection', function(socket){
 	  console.log('---- after setting lat long and connection if possible ------');
 	  displayLatUser();	  	
   });
-  socket.on('reconnect', function(data){
-    console.log('message : ',data.msg,"to : ",data.to);
-    //data.to has user name of user to whom data is to be send
-    io.in(data.to).emit('messagefromserver',data.msg);
+  socket.on('reconnect user',function(){
+    console.log('in reconnect user :',username);
+    var index=findUser(username,socket);
+    console.log(index);
+    if(typeof index == 'undefined'){
+    	index=findLatUser(user,socket);
+    	console.log("2nd",index);
+    	latroom[index].connected=0;
+    	latroom[index].connectedto="";
+    	findLatConnectedUser(latroom[index].user,socket)
+    	io.in(username).emit('user disconnected',latroom[index].user);
+    	displayLatUser();
+    	findLatUserRoom(username,latroom.length-1);
+		displayLatUser();	  
+    }
+    else{
+    	room[index].connected=0;
+    	room[index].connectedto="";
+    	findConnectedUser(room[index].user,socket);
+    	io.in(username).emit('user disconnected',username);
+    	displayUser();
+    	findUserRoom(username,room.length-1);
+    	displayUser();
+    }/*
+    process.exit(0);*/
   });
   //on message received
   socket.on('chat message', function(data){

@@ -10,8 +10,8 @@ function maincontroller($scope,chatSocket){
 	      chatSocket.emit('connection');
 	    }
 	    $scope.reconnect=function(){
-	    	console.log("in reconnect()");
-	    	chatSocket.emit('reconnect');
+	    	console.log("in reconnect users()");
+	    	chatSocket.emit('reconnect user');
 	    }
         $scope.box=false;
         $scope.space=true;
@@ -75,6 +75,7 @@ function maincontroller($scope,chatSocket){
 		scroll();
 	}
 	$scope.sendmsg=function(){
+		if($scope.msg!=""){
 		console.log($scope.msg);
 		chatSocket.emit('chat message',{msg:$scope.msg,to:sendto});
 		var element1 = angular.element("<div class='row'><div class='textbox' style='float:right;margin-top:1em'><strong style='color:white'>You : "+$scope.msg+"</strong></div></div>");
@@ -82,19 +83,22 @@ function maincontroller($scope,chatSocket){
         scroll();
 		$scope.msg="";
 		$scope.box=false;
+	    }
 	}
 	chatSocket.on("user disconnected",function(data){
 		console.log("disconnected from user : ",data);
 		$("#chatwindow").html("");
+		sendto="";	
 		$scope.line="User Disconnected Trying to connect to Other Users";
 	});
 	chatSocket.on('messagefromserver',function(data){
+		if(data!=null){
 		console.log("message received :",data);
 		var element1 = angular.element("<div class='row'><div class='textbox' style='float:left;margin-top:1em'><strong style='color:white'>Stranger : "+data+"</strong></div></div>");
         $("#chatwindow").append(element1);
         scroll();
         $scope.line="";
-        $scope.space=false;
+        $scope.space=false;}
 	});
 	chatSocket.on('joined to',function(data){
 		$scope.line="Found active User nearby Say Hi !!!!!";

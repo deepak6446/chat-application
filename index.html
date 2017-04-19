@@ -31,7 +31,7 @@
   	<div class="panel panel-heading" style="margin:1vw">
   		<h2 align="center" style="margin:0em"><em>Talk with People<sup>nearby</sup></em></h2>
   	</div>
-  	<div class="container" style="margin:0em">    
+  	<div class="container" style="margin:0em;">    
   		<div class="row">
   			<div class="col-md-10 col-sm-10" style="padding:0vw 1vw 0vw 1vw">
   				<div class="panel panel-primary" style="padding:0px;margin-bottom:0.8vw">
@@ -78,13 +78,16 @@
                <form ng-submit="sendmsg()">
                  <div class="panel-footer"  style="padding:0px">
                         <div class="input-group">
-                        <span class="input-group-btn">
-                        <button class="btn btn-success btn-sm" id="btn-chat" ng-click="reconnect();">
-                                    Reconnect </button></span>
+
                             <input id="btn-input" type="text" class="form-control input-sm" placeholder="Type your message here..."  autofocus="autofocus"  ng-model="msg" ng-change="box='true';scrollfun()"/>
                             <span class="input-group-btn">
-                                <button class="btn btn-warning btn-sm" id="btn-chat">
+                                <button class="btn btn-warning btn-sm" id="btn-chat" ng-click="sendmsg()">
                                     Send</button>
+                            </span>
+                            <span class="input-group-btn">
+                            <button class="btn btn-success btn-sm" id="btn-chat" ng-click="reconnect()">
+                                        Reconnect 
+                            </button>
                             </span>
                         </div>
                  </div>
